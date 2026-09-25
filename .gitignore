@@ -3,3 +3,6 @@
 /data_sample
 mlflow.db
 mlruns/
+
+mlartifacts/
+**/__pycache__/

@@ -1,0 +1,13 @@
+.venv/
+data/
+mlruns/
+mlflow.db
+.git/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.dvc/cache/
+.dvc/tmp/
+.vscode/
+.idea/
