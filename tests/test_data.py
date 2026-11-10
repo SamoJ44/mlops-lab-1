@@ -14,7 +14,8 @@ def test_resize_image_shape_and_mode():
     assert out.mode == "RGB"
 
 def test_eleven_classes():
-    assert len(CLASSES) == 12
+    assert len(CLASSES) == 11
+
 
 
 
