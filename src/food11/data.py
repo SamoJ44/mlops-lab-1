@@ -1,11 +1,10 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
-
 
 IMAGE_SIZE = (128, 128)
 MINI_LIMIT_PER_SPLIT_CLASS = 100
@@ -24,6 +23,14 @@ CLASS_NAMES = {
     "10": "Vegetable-Fruit",
 }
 
+
+
+CLASSES = list(CLASS_NAMES.values())
+
+
+def category_from_filename(filename: str) -> str:
+    class_id = Path(filename).stem.split("_", maxsplit=1)[0]
+    return CLASS_NAMES[class_id]
 
 @dataclass(frozen=True)
 class ProcessingStats:
@@ -80,10 +87,17 @@ def reset_output_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
-def resize_image(source: Path, destination: Path) -> None:
+def resize_image(img: Image.Image, size: int = 128) -> Image.Image:
+    return img.convert("RGB").resize(
+        (size, size), Image.Resampling.LANCZOS
+    )
+
+
+def save_resized_image(source: Path, destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
+
     with Image.open(source) as image:
-        resized = image.convert("RGB").resize(IMAGE_SIZE, Image.Resampling.LANCZOS)
+        resized = resize_image(image)
         resized.save(destination, format="JPEG", quality=95)
 
 
@@ -102,12 +116,12 @@ def prepare_datasets(raw_dir: Path, processed_dir: Path, mini_dir: Path) -> Proc
             for index, source in enumerate(class_images):
                 processed_destination = processed_dir / split / class_name / source.name
                 try:
-                    resize_image(source, processed_destination)
+                    save_resized_image(source, processed_destination)
                     processed_files += 1
 
                     if index < MINI_LIMIT_PER_SPLIT_CLASS:
                         mini_destination = mini_dir / split / class_name / source.name
-                        resize_image(source, mini_destination)
+                        save_resized_image(source, mini_destination)
                         mini_files += 1
                 except (OSError, UnidentifiedImageError) as exc:
                     print(f"Failed to process {source}: {exc}")
@@ -150,3 +164,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

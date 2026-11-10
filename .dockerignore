@@ -10,4 +10,6 @@ __pycache__/
 .dvc/cache/
 .dvc/tmp/
 .vscode/
-.idea/
+.idea/lab5-backup/
+*.tar.gz
+build-error.txt

@@ -1,13 +1,13 @@
-import io
+﻿import io
 import os
 
-import mlflow
 import numpy as np
 import torch
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
 from torchvision import transforms
 
+import mlflow
 
 # ---------------------------------------------------------
 # Class names
@@ -43,12 +43,7 @@ mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 # ---------------------------------------------------------
 MODEL_URI = "models:/food11@champion"
 
-print(f"Loading model from {MODEL_URI}")
-print(f"MLflow tracking URI: {MLFLOW_TRACKING_URI}")
-
-model = mlflow.pyfunc.load_model(MODEL_URI)
-
-print("Model loaded successfully")
+model = None
 
 
 # ---------------------------------------------------------
@@ -76,6 +71,21 @@ app = FastAPI(
 )
 
 
+@app.on_event("startup")
+def load_model():
+    global model
+
+    if os.environ.get("SKIP_MODEL"):
+        print("Skipping MLflow model loading (test mode)")
+        return
+
+    print(f"Loading model from {MODEL_URI}")
+    print(f"MLflow tracking URI: {MLFLOW_TRACKING_URI}")
+
+    model = mlflow.pyfunc.load_model(MODEL_URI)
+
+    print("Model loaded successfully")
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -83,6 +93,11 @@ def health():
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
+    if model is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Model is not loaded",
+        )
     try:
         contents = await file.read()
 
