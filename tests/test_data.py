@@ -1,4 +1,4 @@
-﻿from PIL import Image
+from PIL import Image
 
 from src.food11.data import CLASSES, category_from_filename, resize_image
 
@@ -15,3 +15,7 @@ def test_resize_image_shape_and_mode():
 
 def test_eleven_classes():
     assert len(CLASSES) == 11
+
+
+
+
